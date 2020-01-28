@@ -1,9 +1,13 @@
 import javafx.application.Application;
-import javafx.event.Event;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import javafx.scene.control.Menu;
+import javafx.scene.control.MenuItem;
+import javafx.scene.control.TextField;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
@@ -12,14 +16,8 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.select.Elements;
 import java.util.Date;
-import java.sql.Timestamp;
 import java.io.*;
-import java.lang.reflect.Array;
 import java.net.URL;
-import java.nio.file.Files;
-import java.util.ArrayList;
-import java.util.List;
-
 public class Main extends Application
 {
 
@@ -34,18 +32,22 @@ public class Main extends Application
     Label warningLabel = new Label("");
     ListView<String> funkoNames = new ListView<>();
     VBox center;
+    HBox listOptions;
+    Button remove = new Button("Remove");
+    Button next = new Button("Next");
+    Button prev = new Button("Previous");
     Button check = new Button("Check Pops");
 
+
     //Alternate Center
-    Label popName =  new Label("");
-    Label popLink = new Label("");
     VBox altVbox;
-    Hyperlink hyperlink;
+    Hyperlink hyperlink = new Hyperlink();
 
     //Menu Stuff
     MenuItem menuItems = new MenuItem();
     Menu menu = new Menu();
     BorderPane borderPane = new BorderPane();
+
 
     @Override
     public void start(Stage stage) throws IOException
@@ -65,29 +67,19 @@ public class Main extends Application
 
         Document doc = Jsoup.parse(htmlFile, "UTF-8");
         //adding the pops
-        addItems.setOnAction(event -> funkoNames.getItems().add(addPopField.getText()));
-
-        //editing the pops
-        funkoNames.getSelectionModel().selectedItemProperty().addListener((source, o, n)->{
-            String selected = funkoNames.getSelectionModel().getSelectedItem();
-            int index = funkoNames.getSelectionModel().getSelectedIndex();
-            if(selected != null)
-            {
-                editFunkos(selected, index);
-            }
+        addItems.setOnAction(event -> {
+            funkoNames.getItems().add(addPopField.getText());
+            funkoNames.getSelectionModel().select(0);
         });
 
         //checking for pops
         check.setOnAction(Event->{
+            altVbox = new VBox();
             for(int i =0; i < funkoNames.getItems().size(); i++)
             {
                 //regular expression logic
                 String cssQuery = "[^data-aria-label-part]:contains" + "(" + funkoNames.getItems().get(i) + ")";
                 Elements element = doc.select(cssQuery);
-                System.out.println("Pop Name: " + funkoNames.getItems().get(i));
-                System.out.println("Results: " + element.size());
-                System.out.println();
-
                 try {
 
                     String temp = element.get(0).toString();
@@ -97,34 +89,35 @@ public class Main extends Application
                     String title = temp2.substring(1, temp2.indexOf('<'));
 
                     //logging information
-                    System.out.println(temp);
-                    System.out.println("Source");
-                    System.out.println(temp2);
-                    System.out.println("Title");
-                    System.out.println(title);
-                    System.out.println("Link");
-                    System.out.println(tokens[1]);
+                    System.out.println(i+1 +" iterations");
 
 
                     borderPane.setLeft(null);
                     //alt vbox set up
-                    popName.setText(title);
-                    hyperlink = new Hyperlink(tokens[1]);
-                    altVbox = new VBox(popName, hyperlink);
+                    altVbox.getChildren().addAll(new Label(title), new Hyperlink(tokens[1]));
                     altVbox.setAlignment(Pos.CENTER);
                     altVbox.setPadding(new Insets(10));
                     borderPane.setCenter(altVbox);
+                    System.out.println(altVbox.getChildren().size());
 
                 }
                 catch(IndexOutOfBoundsException e)
                 {
                     warningLabel.setText("No pops Available check later!");
+                    System.out.println(funkoNames.getItems().get(i));
+
                 }
             }
         });
-        /*hyperlink.setOnAction(Event->{
-            getHostServices().showDocument(hyperlink.getText());
-        });*/
+
+        //naviagting and deleting from list
+        prev.setOnAction(Event-> funkoNames.getSelectionModel().selectPrevious());
+
+        next.setOnAction(Event-> funkoNames.getSelectionModel().selectNext());
+
+        remove.setOnAction(Event-> funkoNames.getItems().remove(funkoNames.getSelectionModel().getSelectedIndex()));
+
+
         //setting size for list vie
         funkoNames.setMaxHeight(200);
         funkoNames.setMaxWidth(200);
@@ -132,51 +125,27 @@ public class Main extends Application
         //setting size for text field
         addPopField.setMaxWidth(100);
 
+        //setting left side up
         left = new VBox(10,  myLabel,addPopField, addItems );
         left.setPadding(new Insets(10));
         left.setAlignment(Pos.CENTER);
         borderPane.setLeft(left);
 
-        center = new VBox(10,listLabel, warningLabel, funkoNames, check);
+        //setting center up
+        listOptions = new HBox(10, check, next, prev, remove);
+        listOptions.setPadding(new Insets(10));
+        listOptions.setAlignment(Pos.CENTER);
+        center = new VBox(10,listLabel, warningLabel, funkoNames, listOptions);
         center.setPadding(new Insets(10));
         center.setAlignment(Pos.CENTER);
         borderPane.setCenter(center);
 
+        //displaying the scene
         stage.setScene(new Scene(borderPane, 800,500));
         stage.show();
-
-
-    }
-    private void editFunkos(String funkoPop, int index)
-    {
-        Label editLabel = new Label("Edit Name");
-        TextField funkoName = new TextField();
-        funkoName.setMaxWidth(100);
-        Button change = new Button("Change");
-        Button exit = new Button("Exit");
-
-        HBox buttons = new HBox(10, change, exit);
-        buttons.setAlignment(Pos.CENTER);
-        buttons.setPadding(new Insets(10));
-
-        VBox v = new VBox(10, editLabel, funkoName, buttons);
-        v.setAlignment(Pos.CENTER);
-        v.setPadding(new Insets(10));
-        borderPane.setCenter(v);
-
-        change.setOnAction(Event->{
-
-            funkoNames.getItems().set(index, funkoName.getText());
-            borderPane.setCenter(center);
-        });
-
-        exit.setOnAction(Event->{
-            borderPane.setCenter(center);
-        });
-
     }
 
-
+    //Used to download the html file
     private void loadingDocument(String urlString) throws IOException
     {
         URL url = new URL(urlString);
