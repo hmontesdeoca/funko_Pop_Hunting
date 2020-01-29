@@ -11,6 +11,8 @@ import javafx.scene.control.TextField;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import javafx.scene.web.WebEngine;
+import javafx.scene.web.WebView;
 import javafx.stage.Stage;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -20,6 +22,9 @@ import java.io.*;
 import java.net.URL;
 public class Main extends Application
 {
+    //Browser stuff
+    WebView browser = new WebView();
+    WebEngine webEngine = browser.getEngine();
 
     //left side
     Label myLabel = new Label("Enter the Pops you would like to actively search for!");
@@ -42,6 +47,8 @@ public class Main extends Application
     //Alternate Center
     VBox altVbox;
     Hyperlink hyperlink = new Hyperlink();
+    Button goBack = new Button("Back");
+    VBox buttonHolder = new VBox(goBack);
 
     //Menu Stuff
     MenuItem menuItems = new MenuItem();
@@ -68,6 +75,7 @@ public class Main extends Application
         Document doc = Jsoup.parse(htmlFile, "UTF-8");
         //adding the pops
         addItems.setOnAction(event -> {
+
             funkoNames.getItems().add(addPopField.getText());
             funkoNames.getSelectionModel().select(0);
         });
@@ -77,10 +85,12 @@ public class Main extends Application
             altVbox = new VBox();
             for(int i =0; i < funkoNames.getItems().size(); i++)
             {
+
                 //regular expression logic
                 String cssQuery = "[^data-aria-label-part]:contains" + "(" + funkoNames.getItems().get(i) + ")";
                 Elements element = doc.select(cssQuery);
                 try {
+
 
                     String temp = element.get(0).toString();
                     String temp2 = temp.substring(temp.indexOf('>'));
@@ -89,16 +99,23 @@ public class Main extends Application
                     String title = temp2.substring(1, temp2.indexOf('<'));
 
                     //logging information
-                    System.out.println(i+1 +" iterations");
+                    System.out.println(1 +" iterations");
 
 
                     borderPane.setLeft(null);
                     //alt vbox set up
-                    altVbox.getChildren().addAll(new Label(title), new Hyperlink(tokens[1]));
+                    Hyperlink hyp = new Hyperlink(tokens[1]);
+                    hyp.setOnMouseClicked(Event1-> {
+                        getHostServices().showDocument(tokens[1]);
+                    });
+                    altVbox.getChildren().addAll(new Label(title), hyp);
                     altVbox.setAlignment(Pos.CENTER);
                     altVbox.setPadding(new Insets(10));
                     borderPane.setCenter(altVbox);
-                    System.out.println(altVbox.getChildren().size());
+                    buttonHolder.setPadding(new Insets(10));
+                    buttonHolder.setAlignment(Pos.CENTER);
+                    borderPane.setBottom(buttonHolder);
+                    borderPane.setPadding(new Insets(10));
 
                 }
                 catch(IndexOutOfBoundsException e)
@@ -140,6 +157,12 @@ public class Main extends Application
         center.setAlignment(Pos.CENTER);
         borderPane.setCenter(center);
 
+        //going back to center
+        goBack.setOnAction(Event->{
+            borderPane.setCenter(center);
+            borderPane.setLeft(left);
+            borderPane.setBottom(null);
+        });
         //displaying the scene
         stage.setScene(new Scene(borderPane, 800,500));
         stage.show();
