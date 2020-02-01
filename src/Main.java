@@ -22,9 +22,6 @@ import java.io.*;
 import java.net.URL;
 public class Main extends Application
 {
-    //Browser stuff
-    WebView browser = new WebView();
-    WebEngine webEngine = browser.getEngine();
 
     //left side
     Label myLabel = new Label("Enter the Pops you would like to actively search for!");
