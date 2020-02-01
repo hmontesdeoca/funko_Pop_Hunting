@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/Funko Pop Hunting.iml" filepath="$PROJECT_DIR$/Funko Pop Hunting.iml" />
+      <module fileurl="file://$PROJECT_DIR$/funko_Pop_Hunting.iml" filepath="$PROJECT_DIR$/funko_Pop_Hunting.iml" />
     </modules>
   </component>
 </project>
