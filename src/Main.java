@@ -53,6 +53,11 @@ public class Main extends Application
     PrintWriter printWriter;
     BorderPane borderPane = new BorderPane();
 
+    public static void main(String args)
+    {
+        launch(args);
+    }
+
 
     @Override
     public void start(Stage stage) throws IOException
