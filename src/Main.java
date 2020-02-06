@@ -19,6 +19,8 @@ import org.jsoup.select.Elements;
 import java.util.Date;
 import java.io.*;
 import java.net.URL;
+import java.util.Scanner;
+
 public class Main extends Application
 {
 
@@ -151,7 +153,30 @@ public class Main extends Application
         });
 
             //setting menu Events
-        openFile.setOnAction(Event->{});
+        openFile.setOnAction(Event->{
+            FileChooser fileChooser = new FileChooser();
+            fileChooser.getExtensionFilters().addAll(new FileChooser.ExtensionFilter("Text Files", "*.txt"));
+            try {
+                File newFile = fileChooser.showOpenDialog(stage);
+                Scanner scanner = new Scanner(newFile);
+                String temp;
+                while (scanner.hasNext())
+                {
+                    temp = scanner.nextLine();
+                    if(temp.contains("Name:"))
+                    {
+                        funkoNames.getItems().add(temp.substring(5));
+
+                    }
+                }
+            }
+            catch(Exception e)
+            {
+                Alert alert = new Alert(Alert.AlertType.ERROR);
+                alert.setHeaderText("Error Opening File!");
+                alert.show();
+            }
+        });
         saveFile.setOnAction(Event->{
             FileChooser fileChooser = new FileChooser();
             fileChooser.getExtensionFilters().addAll(
@@ -185,7 +210,6 @@ public class Main extends Application
             }
             catch (Exception e)
             {
-                e.printStackTrace();
                 Alert alert = new Alert(Alert.AlertType.ERROR);
                 alert.setHeaderText("Error Saving File!");
                 alert.show();
